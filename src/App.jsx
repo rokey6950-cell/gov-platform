@@ -3,19 +3,10 @@
  *  GOVERNMENT AI AVATAR PLATFORM  —  PART 2 (FIXED)
  *  Pages  : Login · Home · Dashboard · Live Broadcast · AI Assistant
  *           Translate & Speak · Broadcasts
- *
- *  FIXES APPLIED
- *  ─────────────
- *  FIX 1 : CSS injected once via stable ref — no React reconciliation issues
- *  FIX 2 : Memory-leak-proof intervals — useRef guard + always-fires cleanup
- *  FIX 3 : Voice synthesis multi-retry loader (5 attempts, 400ms apart)
- *  FIX 4 : Demo mode fallback — realistic responses when API unavailable
- *  FIX 5 : Word-by-word reveal animation after API response arrives
- *  FIX 6 : TTS boundary-event lip-sync — mouth moves word by word
- *  FIX 7 : SR browser fallback — styled card with Chrome link + text fallback
- *  FIX 8 : Broadcast cleanup on page navigation via reducer broadcast state
  * ═══════════════════════════════════════════════════════════════════
  */
+
+
 
 import {
   Component, useState, useEffect, useRef, useReducer,
@@ -243,31 +234,27 @@ textarea.inp{resize:vertical;min-height:80px;}
 `;
 
 
-/* ═══════════════════════════════════════════════════════════════════
-   §2  CSS INJECTION HOOK  (FIX 1 — stable, no re-injection)
-═══════════════════════════════════════════════════════════════════ */
+
 function useGlobalCSS() {
-  // useRef ensures the effect only runs once regardless of renders
+ 
   const injected = useRef(false);
   useEffect(() => {
     if (injected.current) return;
     injected.current = true;
-    if (document.getElementById(CSS_ID)) return; // already injected
+    if (document.getElementById(CSS_ID)) return;
     const el = document.createElement("style");
     el.id = CSS_ID;
     el.textContent = CSS;
     document.head.appendChild(el);
-    // No cleanup — styles should persist for the app lifetime
-  }, []); // empty deps — runs exactly once
+   
+  }, []); 
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   §3  CENTRAL REDUCER
-═══════════════════════════════════════════════════════════════════ */
+
 const INIT = {
-  page: "login",
+  page: "login", 
   user: null,
-  broadcastActive: false, // FIX 8 — global broadcast state for cleanup
+  broadcastActive: false, 
   broadcasts: [
     { id:"b1", title:"National Health Advisory — Vaccination Drive",      dept:"Ministry of Health", langs:"EN→HI,BN,TA,TE", viewers:245000, eng:"91%", status:"completed", date:"2026-03-01" },
     { id:"b2", title:"Public Safety — Flood Early Warning System",        dept:"NDMA",               langs:"EN→HI,BN,OR",    viewers:189000, eng:"87%", status:"live",      date:"2026-03-06" },
@@ -359,13 +346,11 @@ async function callClaude(messages, system = "", maxTokens = 800) {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error("No Claude API key — running in demo mode");
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("/api/anthropic", {
     method: "POST",
     headers: {
-      "Content-Type":            "application/json",
-      "x-api-key":               apiKey,
-      "anthropic-version":       "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
+      "Content-Type":      "application/json",
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
       model:      "claude-sonnet-4-20250514",
