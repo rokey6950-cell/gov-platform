@@ -343,22 +343,37 @@ let demoIdx = 0;
 
 // ── CLAUDE API (Anthropic) ───────────────────────────────────────────
 async function callClaude(messages, system = "", maxTokens = 800) {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("No Claude API key — running in demo mode");
+  try {
+    const res = await fetch("/api/anthropic", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages,
+        system: system || "You are a professional government AI assistant for India.",
+        maxTokens
+      }),
+    });
 
-  const res = await fetch("/api/anthropic", {
-    method: "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model:      "claude-sonnet-4-20250514",
-      max_tokens: maxTokens,
-      system:     system || "You are a professional government AI assistant for India.",
-      messages,
-    }),
-  });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data?.error ||
+        data?.message ||
+        "Claude API request failed"
+      );
+    }
+
+    return data;
+
+  } catch (error) {
+    console.error("Claude API Error:", error);
+    throw error;
+  }
+}
+
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
