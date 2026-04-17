@@ -374,17 +374,6 @@ async function callClaude(messages, system = "", maxTokens = 800) {
   }
 }
 
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `HTTP ${res.status}`);
-  }
-
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.content?.[0]?.text || "";
-}
-
 // Helper: translate with Claude, fallback to demo
 async function translateText(text, srcLang, tgtLang, tone) {
   try {
