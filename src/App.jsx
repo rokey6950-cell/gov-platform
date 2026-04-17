@@ -360,12 +360,13 @@ async function callClaude(messages, system = "", maxTokens = 800) {
 
     if (!res.ok) {
       throw new Error(
+        data?.error?.message ||
         data?.error ||
         data?.message ||
+        JSON.stringify(data) ||
         "Claude API request failed"
       );
     }
-
     return data;
 
   } catch (error) {
